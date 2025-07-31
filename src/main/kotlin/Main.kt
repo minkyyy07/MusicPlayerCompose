@@ -38,6 +38,12 @@ import androidx.compose.foundation.background
 import androidx.compose.ui.graphics.Color
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.text.BasicTextField
+import androidx.compose.runtime.mutableStateListOf
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
+import java.net.HttpURLConnection
+import java.net.URL
 
 // Функция для загрузки PNG-изображения в качестве фона (доступна только в коде)
 fun loadBackgroundImage(path: String): ImageBitmap? {
@@ -91,6 +97,10 @@ fun TopBar(selected: String, onSelect: (String) -> Unit) {
 @Preview
 fun App() {
     var selectedTab by remember { mutableStateOf("Player") }
+    var isAuthorized by remember { mutableStateOf(false) }
+    var searchQuery by remember { mutableStateOf("") }
+    var searchResults = remember { mutableStateListOf<String>() }
+    var playingTrack by remember { mutableStateOf<String?>(null) }
     var fileName by remember { mutableStateOf<String?>(null) }
     var clip by remember { mutableStateOf<Clip?>(null) }
     var isPlaying by remember { mutableStateOf(false) }
@@ -131,66 +141,54 @@ fun App() {
                 Spacer(Modifier.height(24.dp))
                 when (selectedTab) {
                     "Player" -> {
-                        Text(fileName ?: "No file selected")
-                        Spacer(Modifier.height(16.dp))
-                        Row {
+                        if (!isAuthorized) {
                             Button(onClick = {
-                                val chooser = JFileChooser()
-                                if (chooser.showOpenDialog(null) == JFileChooser.APPROVE_OPTION) {
-                                    val file = chooser.selectedFile
-                                    fileName = file.name
-                                    clip?.close()
-                                    val audioStream = AudioSystem.getAudioInputStream(file)
-                                    clip = AudioSystem.getClip().apply {
-                                        open(audioStream)
-                                    }
-                                    progress = 0f
-                                    duration = clip!!.microsecondLength / 1_000_000f
-                                    isPlaying = false
+                                // Здесь должна быть реализация OAuth авторизации Spotify
+                                // Для примера просто эмулируем успешную авторизацию
+                                isAuthorized = true
+                            }) { Text("Войти через Spotify") }
+                        } else {
+                            BasicTextField(
+                                value = searchQuery,
+                                onValueChange = { searchQuery = it },
+                                modifier = Modifier
+                                    .fillMaxWidth(0.7f)
+                                    .background(Color.White, RoundedCornerShape(8.dp))
+                                    .padding(8.dp),
+                                singleLine = true
+                            )
+                            Spacer(Modifier.height(8.dp))
+                            Button(onClick = {
+                                // Пример запроса к Spotify API (реальный токен и обработка нужны)
+                                // Здесь только эмуляция поиска
+                                searchResults.clear()
+                                if (searchQuery.isNotBlank()) {
+                                    searchResults.addAll(listOf(
+                                        "Spotify Track 1: $searchQuery",
+                                        "Spotify Track 2: $searchQuery",
+                                        "Spotify Track 3: $searchQuery"
+                                    ))
                                 }
-                            }) { Text("Choose file") }
-                            Spacer(Modifier.width(8.dp))
-                            Button(
-                                onClick = {
-                                    if (clip != null) {
-                                        if (!isPlaying) {
-                                            clip!!.start()
-                                            isPlaying = true
-                                        } else {
-                                            clip!!.stop()
-                                            isPlaying = false
+                            }) { Text("Искать в Spotify") }
+                            Spacer(Modifier.height(16.dp))
+                            if (searchResults.isNotEmpty()) {
+                                Text("Результаты поиска:")
+                                Spacer(Modifier.height(8.dp))
+                                searchResults.forEach { track ->
+                                    Row(verticalAlignment = Alignment.CenterVertically) {
+                                        Text(track, modifier = Modifier.weight(1f))
+                                        Button(onClick = { playingTrack = track }) {
+                                            Text("Воспроизвести")
                                         }
                                     }
-                                },
-                                enabled = clip != null
-                            ) { Text(if (isPlaying) "Pause" else "Play") }
-                            Spacer(Modifier.width(8.dp))
-                            Button(
-                                onClick = {
-                                    clip?.let {
-                                        it.stop()
-                                        it.framePosition = 0
-                                        isPlaying = false
-                                        progress = 0f
-                                    }
-                                },
-                                enabled = clip != null
-                            ) { Text("Stop") }
-                        }
-                        Spacer(Modifier.height(16.dp))
-                        if (clip != null) {
-                            Slider(
-                                value = progress,
-                                onValueChange = {
-                                    progress = it
-                                    clip?.microsecondPosition = (it * 1_000_000).toLong()
-                                },
-                                valueRange = 0f..duration,
-                                modifier = Modifier.fillMaxWidth(0.8f)
-                            )
-                            Text(
-                                "${progress.toInt()} / ${duration.toInt()} seconds"
-                            )
+                                    Spacer(Modifier.height(4.dp))
+                                }
+                            }
+                            if (playingTrack != null) {
+                                Spacer(Modifier.height(16.dp))
+                                Text("Сейчас играет: $playingTrack")
+                                // Здесь должна быть интеграция с Spotify Playback SDK
+                            }
                         }
                     }
                     else -> {
