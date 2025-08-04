@@ -41,6 +41,24 @@ class AppState(
         _currentTrack.value = track
         playTrack(track)
     }
+
+    fun playNextTrack() {
+        currentTrackList?.let { tracks ->
+            val currentIndex = tracks.indexOf(currentTrack.value)
+            if (currentIndex != -1 && currentIndex < tracks.size -1) {
+                selectTrack(tracks[currentIndex + 1])
+            }
+        }
+    }
+
+    fun playPreviousTrack() {
+        currentTrackList?.let { tracks ->
+            val currentIndex = tracks.indexOf(currentTrack.value)
+            if (currentIndex > 0) {
+                selectTrack(tracks[currentIndex - 1])
+            }
+        }
+    }
     
     private fun playTrack(track: MusicTrack) {
         coroutineScope.launch {
