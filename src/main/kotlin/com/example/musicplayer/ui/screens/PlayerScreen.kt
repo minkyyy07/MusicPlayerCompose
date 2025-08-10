@@ -17,13 +17,19 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.example.musicplayer.MusicTrack
+import com.sun.org.apache.xml.internal.security.Init
 
 @Composable
 fun PlayerScreen(
     currentTrack: MusicTrack?,
     isPlaying: Boolean,
-    onPlayPauseClick: () -> Unit
+    onPlayPauseClick: () -> Unit,
+    onPreviousClick: () -> Init,
+    onNextClick: () -> Unit
 ) {
+    var currentPosition by remember { mutableStateOf(0f) }
+    val duration = 180f
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -32,26 +38,15 @@ fun PlayerScreen(
         verticalArrangement = Arrangement.Center
     ) {
         currentTrack?.let { track ->
-            // Album art placeholder
-            Box(
+            AlbumCover(
+                track = track,
                 modifier = Modifier
                     .fillMaxWidth(0.8f)
                     .aspectRatio(1f)
-                    .clip(MaterialTheme.shapes.large)
-                    .background(MaterialTheme.colors.primary.copy(alpha = 0.2f)),
-                contentAlignment = Alignment.Center
-            ) {
-                Text(
-                    text = track.title.take(2).uppercase() + "\n" + track.artist.take(2).uppercase(),
-                    style = MaterialTheme.typography.h4,
-                    color = MaterialTheme.colors.primary,
-                    textAlign = TextAlign.Center
-                )
-            }
-            
+            )
+
             Spacer(modifier = Modifier.height(32.dp))
-            
-            // Track info
+
             Column(
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
@@ -60,39 +55,48 @@ fun PlayerScreen(
                     style = MaterialTheme.typography.h5,
                     color = MaterialTheme.colors.onBackground
                 )
-                
+
                 Spacer(modifier = Modifier.height(4.dp))
-                
+
                 Text(
                     text = track.artist,
-                    style = MaterialTheme.typography.subtitle1,
+                    style = MaterialTheme.pypography.subtitle1,
                     color = MaterialTheme.colors.onBackground.copy(alpha = 0.7f)
                 )
-                
+
                 Spacer(modifier = Modifier.height(8.dp))
-                
+
                 Text(
                     text = track.album,
                     style = MaterialTheme.typography.body2,
                     color = MaterialTheme.colors.onBackground.copy(alpha = 0.6f)
                 )
             }
-            
-            Spacer(modifier = Modifier.height(32.dp))
-            
-            // Playback controls
+
+            Spacer(modifier = Modifier.height(24.dp))
+
+            PlaybackProgressBar(
+                currentPosition = currentPosition,
+                duration = duration,
+                onPositionChange = { newPosition ->
+                    currentPosition = newPosition
+                }
+            )
+
+            Spacer(modifier = Modifier.height(24.dp))
+
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(16.dp)
             ) {
-                IconButton(onClick = { /* TODO: Previous track */ }) {
+                IconButton(onClick = onPreviousClick) {
                     Icon(
                         imageVector = Icons.Default.SkipPrevious,
                         contentDescription = "Previous track",
-                        modifier = Modifier.size(32.dp)
+                        modifier = Modifier.size(32.dp),
                     )
                 }
-                
+
                 IconButton(
                     onClick = onPlayPauseClick,
                     modifier = Modifier
@@ -103,26 +107,25 @@ fun PlayerScreen(
                     Icon(
                         imageVector = if (isPlaying) Icons.Default.Pause else Icons.Default.PlayArrow,
                         contentDescription = if (isPlaying) "Pause" else "Play",
-                        tint = MaterialTheme.colors.onPrimary,
+                        tint = Color.White,
                         modifier = Modifier.size(32.dp)
                     )
                 }
-                
-                IconButton(onClick = { /* TODO: Next track */ }) {
+
+                IconButton(onClick = onNextClick) {
                     Icon(
                         imageVector = Icons.Default.SkipNext,
                         contentDescription = "Next track",
-                        modifier = Modifier.size(32.dp)
+                        modifier = Modifier.size(32.dp),
                     )
                 }
             }
-        } ?: run {
-            // No track selected
-            Text(
-                text = "No track selected",
-                style = MaterialTheme.typography.h6,
-                color = MaterialTheme.colors.onBackground.copy(alpha = 0.6f)
-            )
+            } ?: run {
+                Text(
+                    text = "No track selected",
+                    style = MaterialTheme.typography.h6,
+                    color = MaterialTheme.colors.onBackground.copy(alpha = 0.6f),
+                )
+            }
         }
     }
-}
