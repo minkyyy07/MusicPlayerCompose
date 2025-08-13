@@ -1,53 +1,36 @@
 package com.example.musicplayer.ui.components
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import com.example.musicplayer.ui.theme.MusicPlayerColors
 
 @Composable
 fun PlaybackProgressBar(
-    currentPosition: Float,
-    duration: Float,
-    onPositionChange: (Float) -> Unit,
-    onSeek: ((Float) -> Unit)? = null
+    progress: Float,
+    onSeek: (Float) -> Unit,
+    modifier: Modifier = Modifier
 ) {
-    Column(modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp)) {
+    Column(modifier = modifier) {
         Slider(
-            value = if (duration > 0) currentPosition.coerceIn(0f, duration) else 0f,
-            onValueChange = { newValue ->
-                onPositionChange(newValue)
-                onSeek?.invoke(newValue)
-            },
-            valueRange = 0f..duration.coerceAtLeast(1f),
+            value = progress.coerceIn(0f, 1f),
+            onValueChange = onSeek,
             colors = SliderDefaults.colors(
-                thumbColor = MaterialTheme.colors.primary,
-                activeTrackColor = MaterialTheme.colors.primary,
-                inactiveTrackColor = MaterialTheme.colors.onBackground.copy(alpha = 0.3f)
-            )
+                thumbColor = Color.White,
+                activeTrackColor = MusicPlayerColors.Purple,
+                inactiveTrackColor = Color.White.copy(alpha = 0.3f)
+            ),
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(6.dp)
         )
-
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween
-        ) {
-            Text(
-                text = formatTime(currentPosition.toInt()),
-                style = MaterialTheme.typography.caption,
-                color = MaterialTheme.colors.onBackground.copy(alpha = 0.7f)
-            )
-            Text(
-                text = formatTime(duration.toInt()),
-                style = MaterialTheme.typography.caption,
-                color = MaterialTheme.colors.onBackground.copy(alpha = 0.7f)
-            )
-        }
     }
-}
-
-private fun formatTime(seconds: Int): String {
-    val minutes = seconds / 60
-    val remainingSeconds = seconds % 60
-    return "%d:%02d".format(minutes, remainingSeconds)
 }

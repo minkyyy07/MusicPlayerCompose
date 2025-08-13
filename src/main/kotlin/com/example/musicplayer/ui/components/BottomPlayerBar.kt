@@ -1,139 +1,161 @@
 package com.example.musicplayer.ui.components
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Pause
-import androidx.compose.material.icons.filled.PlayArrow
-import androidx.compose.material.icons.filled.SkipNext
-import androidx.compose.material.icons.filled.SkipPrevious
+import androidx.compose.material.icons.filled.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.example.musicplayer.MusicTrack
+import com.example.musicplayer.ui.theme.MusicPlayerColors
 
 @Composable
 fun BottomPlayerBar(
     track: MusicTrack,
     isPlaying: Boolean,
     onPlayPauseClick: () -> Unit,
+    onPreviousClick: () -> Unit,
+    onNextClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    Surface(
-        elevation = 8.dp,
+    Card(
         modifier = modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp, vertical = 8.dp),
+        shape = RoundedCornerShape(20.dp),
+        elevation = 12.dp,
+        backgroundColor = Color.White
     ) {
-        Column(
+        Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .background(MaterialTheme.colors.surface)
-                .padding(8.dp)
+                .background(
+                    brush = Brush.horizontalGradient(
+                        colors = listOf(
+                            Color.White,
+                            MusicPlayerColors.Purple.copy(alpha = 0.05f)
+                        )
+                    )
+                )
+                .padding(16.dp),
+            verticalAlignment = Alignment.CenterVertically
         ) {
-            // Progress bar
-            Slider(
-                value = 0.3f, // TODO: Replace with actual progress
-                onValueChange = {},
+            // Иконка трека
+            Box(
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 8.dp)
-            )
-            
-            // Track info
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 16.dp, vertical = 8.dp),
-                verticalAlignment = Alignment.CenterVertically
+                    .size(48.dp)
+                    .clip(CircleShape)
+                    .background(
+                        brush = Brush.linearGradient(
+                            colors = listOf(
+                                MusicPlayerColors.Purple,
+                                MusicPlayerColors.Pink
+                            )
+                        )
+                    ),
+                contentAlignment = Alignment.Center
             ) {
-                // Album art placeholder
-                Box(
-                    modifier = Modifier
-                        .size(50.dp)
-                        .clip(RoundedCornerShape(4.dp))
-                        .background(MaterialTheme.colors.primary.copy(alpha = 0.2f)),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text(
-                        text = track.title.take(2).uppercase(),
-                        style = MaterialTheme.typography.h6,
-                        color = MaterialTheme.colors.primary
-                    )
-                }
-
-                Spacer(modifier = Modifier.width(16.dp))
-
-                // Track details
-                Column(
-                    modifier = Modifier.weight(1f)
-                ) {
-                    Text(
-                        text = track.title,
-                        style = MaterialTheme.typography.subtitle1,
-                        maxLines = 1,
-                        color = MaterialTheme.colors.onSurface
-                    )
-                    Text(
-                        text = track.artist,
-                        style = MaterialTheme.typography.caption,
-                        maxLines = 1,
-                        color = MaterialTheme.colors.onSurface.copy(alpha = 0.7f)
-                    )
-                }
+                Icon(
+                    imageVector = Icons.Default.MusicNote,
+                    contentDescription = null,
+                    tint = Color.White,
+                    modifier = Modifier.size(24.dp)
+                )
             }
-            
-            // Playback controls
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.Center
+
+            Spacer(modifier = Modifier.width(16.dp))
+
+            // Информация о треке
+            Column(
+                modifier = Modifier.weight(1f)
             ) {
-                // Previous button
+                Text(
+                    text = track.title,
+                    style = MaterialTheme.typography.body1,
+                    fontWeight = FontWeight.Medium,
+                    color = MusicPlayerColors.DarkGray,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
+                )
+                Text(
+                    text = track.artist,
+                    style = MaterialTheme.typography.body2,
+                    color = MusicPlayerColors.MediumGray,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
+                )
+            }
+
+            Spacer(modifier = Modifier.width(16.dp))
+
+            // Кнопки управления
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                // Предыдущий трек
                 IconButton(
-                    onClick = { /* TODO: Skip to previous */ },
-                    modifier = Modifier.size(48.dp)
+                    onClick = onPreviousClick,
+                    modifier = Modifier
+                        .size(40.dp)
+                        .clip(CircleShape)
+                        .background(Color.Black.copy(alpha = 0.05f))
                 ) {
                     Icon(
                         imageVector = Icons.Default.SkipPrevious,
                         contentDescription = "Previous",
-                        tint = MaterialTheme.colors.onSurface
+                        tint = MusicPlayerColors.DarkGray,
+                        modifier = Modifier.size(20.dp)
                     )
                 }
-                
-                Spacer(modifier = Modifier.width(16.dp))
-                
-                // Play/Pause button
+
+                // Play/Pause
                 IconButton(
                     onClick = onPlayPauseClick,
                     modifier = Modifier
-                        .size(56.dp)
+                        .size(48.dp)
                         .clip(CircleShape)
-                        .background(MaterialTheme.colors.primary)
+                        .background(
+                            brush = Brush.linearGradient(
+                                colors = listOf(
+                                    MusicPlayerColors.Purple,
+                                    MusicPlayerColors.Pink
+                                )
+                            )
+                        )
                 ) {
                     Icon(
                         imageVector = if (isPlaying) Icons.Default.Pause else Icons.Default.PlayArrow,
                         contentDescription = if (isPlaying) "Pause" else "Play",
                         tint = Color.White,
-                        modifier = Modifier.size(32.dp)
+                        modifier = Modifier.size(24.dp)
                     )
                 }
-                
-                Spacer(modifier = Modifier.width(16.dp))
-                
-                // Next button
+
+                // Следующий трек
                 IconButton(
-                    onClick = { /* TODO: Skip to next */ },
-                    modifier = Modifier.size(48.dp)
+                    onClick = onNextClick,
+                    modifier = Modifier
+                        .size(40.dp)
+                        .clip(CircleShape)
+                        .background(Color.Black.copy(alpha = 0.05f))
                 ) {
                     Icon(
                         imageVector = Icons.Default.SkipNext,
                         contentDescription = "Next",
-                        tint = MaterialTheme.colors.onSurface
+                        tint = MusicPlayerColors.DarkGray,
+                        modifier = Modifier.size(20.dp)
                     )
                 }
             }

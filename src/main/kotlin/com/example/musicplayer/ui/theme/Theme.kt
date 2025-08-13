@@ -7,26 +7,52 @@ import androidx.compose.material.lightColors
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
 
+// Современная палитра для музыкального плеера
+object MusicPlayerColors {
+    // Основные цвета
+    val Purple = Color(0xFF6C63FF)
+    val PurpleLight = Color(0xFF9B93FF)
+    val PurpleDark = Color(0xFF4A42C7)
+
+    // Акцентные цвета
+    val Pink = Color(0xFFFF6B9D)
+    val Orange = Color(0xFFFF8A65)
+    val Blue = Color(0xFF42A5F5)
+    val Green = Color(0xFF66BB6A)
+
+    // Нейтральные цвета
+    val DarkBackground = Color(0xFF0D0D0D)
+    val DarkSurface = Color(0xFF1A1A1A)
+    val DarkCard = Color(0xFF2A2A2A)
+    val LightGray = Color(0xFFE0E0E0)
+    val MediumGray = Color(0xFF757575)
+    val DarkGray = Color(0xFF424242)
+
+    // Градиентные цвета
+    val GradientStart = Color(0xFF667eea)
+    val GradientEnd = Color(0xFFf093fb)
+}
+
 private val DarkColorPalette = darkColors(
-    primary = Color(0xFFBB86FC),
-    primaryVariant = Color(0xFF3700B3),
-    secondary = Color(0xFF03DAC6),
-    background = Color(0xFF121212),
-    surface = Color(0xFF1E1E1E),
-    onPrimary = Color.Black,
-    onSecondary = Color.Black,
+    primary = MusicPlayerColors.Purple,
+    primaryVariant = MusicPlayerColors.PurpleDark,
+    secondary = MusicPlayerColors.Pink,
+    background = MusicPlayerColors.DarkBackground,
+    surface = MusicPlayerColors.DarkSurface,
+    onPrimary = Color.White,
+    onSecondary = Color.White,
     onBackground = Color.White,
     onSurface = Color.White,
 )
 
 private val LightColorPalette = lightColors(
-    primary = Color(0xFF6200EE),
-    primaryVariant = Color(0xFF3700B3),
-    secondary = Color(0xFF03DAC6),
+    primary = MusicPlayerColors.Purple,
+    primaryVariant = MusicPlayerColors.PurpleDark,
+    secondary = MusicPlayerColors.Pink,
     background = Color.White,
-    surface = Color(0xFFF5F5F5),
+    surface = Color(0xFFFAFAFA),
     onPrimary = Color.White,
-    onSecondary = Color.Black,
+    onSecondary = Color.White,
     onBackground = Color.Black,
     onSurface = Color.Black,
 )

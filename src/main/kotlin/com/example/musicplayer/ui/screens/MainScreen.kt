@@ -6,12 +6,14 @@ import androidx.compose.material.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import com.example.musicplayer.AppState
 import com.example.musicplayer.Screen
 import com.example.musicplayer.ui.components.BottomPlayerBar
 import com.example.musicplayer.ui.components.TopBar
+import com.example.musicplayer.ui.theme.MusicPlayerColors
 
 @Composable
 fun MainScreen(appState: AppState) {
@@ -19,49 +21,59 @@ fun MainScreen(appState: AppState) {
     val currentTrack by appState.currentTrack.collectAsState()
     val isPlaying by appState.isPlaying.collectAsState()
     
-    Scaffold(
-        topBar = {
-            TopBar(
-                currentScreen = currentScreen,
-                onNavigationClick = { screen ->
-                    currentScreen = screen
-                }
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(
+                brush = Brush.verticalGradient(
+                    colors = listOf(
+                        MusicPlayerColors.DarkBackground,
+                        MusicPlayerColors.DarkSurface
+                    )
+                )
             )
-        },
-        bottomBar = {
-            currentTrack?.let { track ->
-                BottomPlayerBar(
-                    track = track,
-                    isPlaying = isPlaying,
-                    onPlayPauseClick = { appState.playPause() },
-                    modifier = Modifier.fillMaxWidth()
-                )
-            }
-        }
-    ) { padding ->
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(padding)
-                .background(MaterialTheme.colors.background)
-        ) {
-            when (currentScreen) {
-                is Screen.Player -> PlayerScreen(
-                    currentTrack = currentTrack,
-                    isPlaying = isPlaying,
-                    onPlayPauseClick = { appState.playPause() },
-                    onPreviousClick = { appState.playPreviousTrack() },
-                    onNextClick = { appState.playNextTrack() },
-                    appState = appState
-                )
-                is Screen.Search -> SearchScreen(
-                    availableTracks = appState.trackList.collectAsState().value,
-                    onTrackSelected = { track ->
-                        appState.selectTrack(track)
+    ) {
+        Scaffold(
+            backgroundColor = Color.Transparent,
+            topBar = {
+                TopBar(
+                    currentScreen = currentScreen,
+                    onNavigationClick = { screen ->
+                        currentScreen = screen
                     }
                 )
-                is Screen.Library -> LibraryScreen()
-                is Screen.Settings -> SettingsScreen()
+            },
+            bottomBar = {
+                currentTrack?.let { track ->
+                    BottomPlayerBar(
+                        track = track,
+                        isPlaying = isPlaying,
+                        onPlayPauseClick = { appState.playPause() },
+                        onPreviousClick = { /* TODO: Previous track logic */ },
+                        onNextClick = { /* TODO: Next track logic */ },
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                }
+            }
+        ) { padding ->
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(padding)
+            ) {
+                when (currentScreen) {
+                    is Screen.Player -> PlayerScreen(
+                        currentTrack = currentTrack,
+                        isPlaying = isPlaying,
+                        onPlayPauseClick = { appState.playPause() },
+                        onPreviousClick = { /* TODO: Previous track logic */ },
+                        onNextClick = { /* TODO: Next track logic */ },
+                        appState = appState
+                    )
+                    is Screen.Search -> SearchScreen(appState = appState)
+                    is Screen.Library -> LibraryScreen(appState = appState)
+                    is Screen.Settings -> SettingsScreen()
+                }
             }
         }
     }

@@ -118,7 +118,7 @@ class AppState(
         }
     }
 
-    private fun playTrack(track: MusicTrack) {
+    fun playTrack(track: MusicTrack) {
         coroutineScope.launch {
             try {
                 println("Попытка воспроизвести трек: ${track.title}")

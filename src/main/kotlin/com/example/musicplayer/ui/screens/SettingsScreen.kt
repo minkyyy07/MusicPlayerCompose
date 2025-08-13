@@ -6,9 +6,10 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import com.example.musicplayer.AppState
 
 @Composable
-fun SettingsScreen() {
+fun SettingsScreen(appState: AppState? = null) {
     var darkTheme by remember { mutableStateOf(false) }
     
     Column(
@@ -47,6 +48,16 @@ fun SettingsScreen() {
                     )
                 }
             }
+        }
+
+        // TODO: Add settings content here
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .weight(1f),
+            contentAlignment = Alignment.Center
+        ) {
+            Text("Settings will appear here")
         }
     }
 }

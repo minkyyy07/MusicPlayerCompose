@@ -6,9 +6,10 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import com.example.musicplayer.AppState
 
 @Composable
-fun LibraryScreen() {
+fun LibraryScreen(appState: AppState) {
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -19,7 +20,7 @@ fun LibraryScreen() {
             style = MaterialTheme.typography.h5,
             modifier = Modifier.padding(bottom = 16.dp)
         )
-        
+
         // TODO: Replace with actual library content
         Box(
             modifier = Modifier
