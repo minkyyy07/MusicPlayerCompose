@@ -15,6 +15,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import com.example.musicplayer.AppState
 import com.example.musicplayer.MusicTrack
 import com.example.musicplayer.ui.components.AlbumCover
 import com.example.musicplayer.ui.components.PlaybackProgressBar
@@ -25,10 +26,16 @@ fun PlayerScreen(
     isPlaying: Boolean,
     onPlayPauseClick: () -> Unit,
     onPreviousClick: () -> Unit,
-    onNextClick: () -> Unit
+    onNextClick: () -> Unit,
+    appState: AppState? = null
 ) {
-    var currentPosition by remember { mutableStateOf(0f) }
-    val duration = currentTrack?.duration?.div(1000f) ?: 0f // мс -> секунды
+    // Получаем реальные данные от MP3 плеера если доступны
+    val playerPosition by (appState?.playerPosition?.collectAsState() ?: remember { mutableStateOf(0L) })
+    val playerDuration by (appState?.playerDuration?.collectAsState() ?: remember { mutableStateOf(0L) })
+
+    // Используем данные плеера или fallback значения
+    val currentPositionSec = (playerPosition / 1000f).coerceAtLeast(0f)
+    val durationSec = if (playerDuration > 0) (playerDuration / 1000f) else (currentTrack?.duration?.div(1000f) ?: 0f)
 
     Column(
         modifier = Modifier
@@ -76,10 +83,14 @@ fun PlayerScreen(
             Spacer(modifier = Modifier.height(24.dp))
 
             PlaybackProgressBar(
-                currentPosition = currentPosition,
-                duration = duration,
-                onPositionChange = { newPosition ->
-                    currentPosition = newPosition.coerceIn(0f, duration)
+                currentPosition = currentPositionSec,
+                duration = durationSec,
+                onPositionChange = { /* Обновление UI происходит автоматически */ },
+                onSeek = { newPositionSec ->
+                    // Перемотка только для MP3 треков
+                    if (track.filePath.startsWith("http") || track.filePath.lowercase().endsWith(".mp3")) {
+                        appState?.seekTo((newPositionSec * 1000).toLong())
+                    }
                 }
             )
 
@@ -120,12 +131,12 @@ fun PlayerScreen(
                     )
                 }
             }
-            } ?: run {
-                Text(
-                    text = "No track selected",
-                    style = MaterialTheme.typography.h6,
-                    color = MaterialTheme.colors.onBackground.copy(alpha = 0.6f),
-                )
-            }
+        } ?: run {
+            Text(
+                text = "No track selected",
+                style = MaterialTheme.typography.h6,
+                color = MaterialTheme.colors.onBackground.copy(alpha = 0.6f),
+            )
         }
     }
+}

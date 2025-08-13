@@ -51,9 +51,15 @@ fun MainScreen(appState: AppState) {
                     isPlaying = isPlaying,
                     onPlayPauseClick = { appState.playPause() },
                     onPreviousClick = { appState.playPreviousTrack() },
-                    onNextClick = { appState.playNextTrack() }
+                    onNextClick = { appState.playNextTrack() },
+                    appState = appState
                 )
-                is Screen.Search -> SearchScreen()
+                is Screen.Search -> SearchScreen(
+                    availableTracks = appState.trackList.collectAsState().value,
+                    onTrackSelected = { track ->
+                        appState.selectTrack(track)
+                    }
+                )
                 is Screen.Library -> LibraryScreen()
                 is Screen.Settings -> SettingsScreen()
             }

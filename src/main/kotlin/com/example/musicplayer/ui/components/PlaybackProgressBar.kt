@@ -10,14 +10,22 @@ import androidx.compose.ui.unit.dp
 fun PlaybackProgressBar(
     currentPosition: Float,
     duration: Float,
-    onPositionChange: (Float) -> Unit
+    onPositionChange: (Float) -> Unit,
+    onSeek: ((Float) -> Unit)? = null
 ) {
     Column(modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp)) {
         Slider(
-            value = currentPosition,
-            onValueChange = onPositionChange,
+            value = if (duration > 0) currentPosition.coerceIn(0f, duration) else 0f,
+            onValueChange = { newValue ->
+                onPositionChange(newValue)
+                onSeek?.invoke(newValue)
+            },
             valueRange = 0f..duration.coerceAtLeast(1f),
-            colors = SliderDefaults.colors(thumbColor = MaterialTheme.colors.primary)
+            colors = SliderDefaults.colors(
+                thumbColor = MaterialTheme.colors.primary,
+                activeTrackColor = MaterialTheme.colors.primary,
+                inactiveTrackColor = MaterialTheme.colors.onBackground.copy(alpha = 0.3f)
+            )
         )
 
         Row(
@@ -26,11 +34,13 @@ fun PlaybackProgressBar(
         ) {
             Text(
                 text = formatTime(currentPosition.toInt()),
-                style = MaterialTheme.typography.caption
+                style = MaterialTheme.typography.caption,
+                color = MaterialTheme.colors.onBackground.copy(alpha = 0.7f)
             )
             Text(
                 text = formatTime(duration.toInt()),
-                style = MaterialTheme.typography.caption
+                style = MaterialTheme.typography.caption,
+                color = MaterialTheme.colors.onBackground.copy(alpha = 0.7f)
             )
         }
     }
