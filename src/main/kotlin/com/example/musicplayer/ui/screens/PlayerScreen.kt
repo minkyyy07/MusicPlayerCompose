@@ -14,21 +14,21 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.example.musicplayer.MusicTrack
-import com.sun.org.apache.xml.internal.security.Init
+import com.example.musicplayer.ui.components.AlbumCover
+import com.example.musicplayer.ui.components.PlaybackProgressBar
 
 @Composable
 fun PlayerScreen(
     currentTrack: MusicTrack?,
     isPlaying: Boolean,
     onPlayPauseClick: () -> Unit,
-    onPreviousClick: () -> Init,
+    onPreviousClick: () -> Unit,
     onNextClick: () -> Unit
 ) {
     var currentPosition by remember { mutableStateOf(0f) }
-    val duration = 180f
+    val duration = currentTrack?.duration?.div(1000f) ?: 0f // мс -> секунды
 
     Column(
         modifier = Modifier
@@ -60,7 +60,7 @@ fun PlayerScreen(
 
                 Text(
                     text = track.artist,
-                    style = MaterialTheme.pypography.subtitle1,
+                    style = MaterialTheme.typography.subtitle1,
                     color = MaterialTheme.colors.onBackground.copy(alpha = 0.7f)
                 )
 
@@ -79,7 +79,7 @@ fun PlayerScreen(
                 currentPosition = currentPosition,
                 duration = duration,
                 onPositionChange = { newPosition ->
-                    currentPosition = newPosition
+                    currentPosition = newPosition.coerceIn(0f, duration)
                 }
             )
 

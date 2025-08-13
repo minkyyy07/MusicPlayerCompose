@@ -49,7 +49,9 @@ fun MainScreen(appState: AppState) {
                 is Screen.Player -> PlayerScreen(
                     currentTrack = currentTrack,
                     isPlaying = isPlaying,
-                    onPlayPauseClick = { appState.playPause() }
+                    onPlayPauseClick = { appState.playPause() },
+                    onPreviousClick = { appState.playPreviousTrack() },
+                    onNextClick = { appState.playNextTrack() }
                 )
                 is Screen.Search -> SearchScreen()
                 is Screen.Library -> LibraryScreen()

@@ -19,47 +19,58 @@ class AppState(
 ) {
     private val _currentScreen = MutableStateFlow<Screen>(Screen.Player)
     val currentScreen: StateFlow<Screen> = _currentScreen
-    
+
     private val _currentTrack = MutableStateFlow<MusicTrack?>(null)
     val currentTrack: StateFlow<MusicTrack?> = _currentTrack
-    
+
     private val _isPlaying = MutableStateFlow(false)
     val isPlaying: StateFlow<Boolean> = _isPlaying
-    
+
+    private val _trackList = MutableStateFlow<List<MusicTrack>>(emptyList())
+    val trackList: StateFlow<List<MusicTrack>> = _trackList
+
     private var clip: Any? = null
-    
+
+    fun setTrackList(tracks: List<MusicTrack>) {
+        _trackList.value = tracks
+    }
+
     fun navigateTo(screen: Screen) {
         _currentScreen.value = screen
     }
-    
+
     fun playPause() {
         _isPlaying.value = !_isPlaying.value
         // TODO: Implement actual play/pause logic
     }
-    
+
     fun selectTrack(track: MusicTrack) {
         _currentTrack.value = track
         playTrack(track)
     }
 
     fun playNextTrack() {
-        currentTrackList?.let { tracks ->
-            val currentIndex = tracks.indexOf(currentTrack.value)
-            if (currentIndex != -1 && currentIndex < tracks.size -1) {
+        val tracks = _trackList.value
+        val currentTrack = _currentTrack.value
+        if (tracks.isNotEmpty() && currentTrack != null) {
+            val currentIndex = tracks.indexOf(currentTrack)
+            if (currentIndex != -1 && currentIndex < tracks.size - 1) {
                 selectTrack(tracks[currentIndex + 1])
             }
         }
     }
 
     fun playPreviousTrack() {
-        currentTrackList?.let { tracks ->
-            val currentIndex = tracks.indexOf(currentTrack.value)
+        val tracks = _trackList.value
+        val currentTrack = _currentTrack.value
+        if (tracks.isNotEmpty() && currentTrack != null) {
+            val currentIndex = tracks.indexOf(currentTrack)
             if (currentIndex > 0) {
                 selectTrack(tracks[currentIndex - 1])
             }
         }
     }
-    
+
     private fun playTrack(track: MusicTrack) {
         coroutineScope.launch {
             try {
@@ -76,7 +87,7 @@ class AppState(
             }
         }
     }
-    
+
     fun stopPlayback() {
         (clip as? javax.sound.sampled.Clip)?.let {
             it.stop()
