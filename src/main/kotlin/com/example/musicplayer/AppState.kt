@@ -149,28 +149,35 @@ class AppState(
                         }
                     }
                     else -> {
-                        println("Загрузка других форматов...")
-                        val audioFile = File(track.filePath)
-                        if (!audioFile.exists()) {
-                            throw Exception("Файл не найден: ${track.filePath}")
+                        println("Загрузка аудио по URL...")
+                        // Попробуем использовать стандартную Java Sound API для других форматов
+                        withContext(Dispatchers.IO) {
+                            val audioInputStream = when {
+                                track.filePath.startsWith("http://") || track.filePath.startsWith("https://") -> {
+                                    AudioSystem.getAudioInputStream(BufferedInputStream(URL(track.filePath).openStream()))
+                                }
+                                else -> {
+                                    val file = File(track.filePath)
+                                    if (!file.exists()) throw Exception("Файл не найден: ${track.filePath}")
+                                    AudioSystem.getAudioInputStream(BufferedInputStream(FileInputStream(file)))
+                                }
+                            }
+
+                            val newClip = AudioSystem.getClip()
+                            newClip.open(audioInputStream)
+                            clip = newClip
+
+                            withContext(Dispatchers.Main) {
+                                newClip.start()
+                                _isPlaying.value = true
+                                println("Воспроизведение стандартным плеером началось")
+                            }
                         }
-
-                        val audioStream = AudioSystem.getAudioInputStream(audioFile)
-                        println("Аудиопоток получен, создаём клип...")
-                        val newClip = AudioSystem.getClip()
-                        newClip.open(audioStream)
-
-                        println("Запускаем воспроизведение...")
-                        newClip.start()
-                        this@AppState.clip = newClip
-                        _isPlaying.value = true
-                        println("Воспроизведение началось успешно!")
                     }
                 }
 
             } catch (e: Exception) {
                 println("Ошибка воспроизведения: ${e.message}")
-                e.printStackTrace()
                 _isPlaying.value = false
             }
         }
@@ -178,20 +185,28 @@ class AppState(
 
     fun stopPlayback() {
         try {
-            // Остановить MP3 плеер
-            mp3Player.stop()
-
-            // Остановить стандартный клип
-            (clip as? javax.sound.sampled.Clip)?.let {
-                it.stop()
-                it.close()
-                clip = null
+            // Останавливаем MP3 плеер
+            if (mp3Player.isPlaying.value) {
+                mp3Player.stop()
             }
+
+            // Останавливаем стандартный клип
+            val currentClip = clip as? javax.sound.sampled.Clip
+            if (currentClip?.isRunning == true) {
+                currentClip.stop()
+                currentClip.close()
+            }
+            clip = null
 
             _isPlaying.value = false
         } catch (e: Exception) {
             println("Ошибка остановки воспроизведения: ${e.message}")
         }
+    }
+
+    fun release() {
+        stopPlayback()
+        mp3Player.release()
     }
 }
 
@@ -206,7 +221,7 @@ fun rememberAppState(
 }
 
 data class MusicTrack(
-    val id: Long,
+    val id: String,
     val title: String,
     val artist: String,
     val album: String,

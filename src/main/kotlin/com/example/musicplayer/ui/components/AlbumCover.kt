@@ -12,12 +12,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.graphics.toComposeImageBitmap
 import androidx.compose.ui.layout.ContentScale
 import com.example.musicplayer.MusicTrack
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.awt.image.BufferedImage
-import java.io.ByteArrayOutputStream
 import java.io.File
 import java.net.URL
 import javax.imageio.ImageIO
@@ -43,7 +43,12 @@ fun AlbumCover(track: MusicTrack, modifier: Modifier = Modifier) {
             }.getOrNull()
         }
         if (buffered != null) {
-            imageBitmap = buffered.toImageBitmap()
+            // Преобразуем BufferedImage в Skia Image, затем в ImageBitmap
+            val bytes = java.io.ByteArrayOutputStream().use { baos ->
+                javax.imageio.ImageIO.write(buffered, "png", baos)
+                baos.toByteArray()
+            }
+            imageBitmap = SkiaImage.makeFromEncoded(bytes).toComposeImageBitmap()
         } else {
             loadError = true
         }
@@ -74,11 +79,4 @@ fun AlbumCover(track: MusicTrack, modifier: Modifier = Modifier) {
             )
         }
     }
-}
-
-private fun BufferedImage.toImageBitmap(): ImageBitmap {
-    @Suppress("DEPRECATION")
-    val baos = ByteArrayOutputStream()
-    ImageIO.write(this, "png", baos)
-    return SkiaImage.makeFromEncoded(baos.toByteArray()).asImageBitmap()
 }

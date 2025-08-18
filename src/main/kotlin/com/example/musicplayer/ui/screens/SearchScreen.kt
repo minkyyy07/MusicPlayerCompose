@@ -4,6 +4,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
@@ -25,6 +26,7 @@ import com.example.musicplayer.MusicTrack
 import com.example.musicplayer.data.deezer.DeezerApi
 import com.example.musicplayer.data.deezer.toAppMusicTrack
 import com.example.musicplayer.ui.components.TrackItem
+import com.example.musicplayer.ui.components.TrackPreviewCard
 import com.example.musicplayer.ui.theme.MusicPlayerColors
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -76,16 +78,25 @@ fun SearchScreen(
             text = "Поиск музыки",
             style = MaterialTheme.typography.h4,
             fontWeight = FontWeight.Bold,
-            color = Color.White,
+            color = MaterialTheme.colors.onBackground,
             modifier = Modifier.padding(bottom = 24.dp)
         )
+
+        // Hero header (big title, subtitle, play button)
+        HeroHeader(
+            onPlayClick = {
+                val first = searchResults.firstOrNull()
+                if (first != null) appState.playTrack(first)
+            }
+        )
+        Spacer(modifier = Modifier.height(16.dp))
 
         // Поисковая строка
         Card(
             modifier = Modifier.fillMaxWidth(),
             shape = RoundedCornerShape(16.dp),
             elevation = 8.dp,
-            backgroundColor = Color.White
+            backgroundColor = MaterialTheme.colors.surface
         ) {
             OutlinedTextField(
                 value = searchQuery,
@@ -106,14 +117,14 @@ fun SearchScreen(
                 placeholder = {
                     Text(
                         text = "Поиск треков, исполнителей...",
-                        color = MusicPlayerColors.MediumGray
+                        color = MaterialTheme.colors.onSurface.copy(alpha = 0.5f)
                     )
                 },
                 leadingIcon = {
                     Icon(
                         imageVector = Icons.Default.Search,
                         contentDescription = "Search",
-                        tint = MusicPlayerColors.Purple
+                        tint = MaterialTheme.colors.primary
                     )
                 },
                 trailingIcon = {
@@ -127,7 +138,7 @@ fun SearchScreen(
                             Icon(
                                 imageVector = Icons.Default.Clear,
                                 contentDescription = "Clear",
-                                tint = MusicPlayerColors.MediumGray
+                                tint = MaterialTheme.colors.onSurface.copy(alpha = 0.6f)
                             )
                         }
                     }
@@ -141,10 +152,11 @@ fun SearchScreen(
                     }
                 ),
                 colors = TextFieldDefaults.outlinedTextFieldColors(
-                    backgroundColor = Color.White,
-                    focusedBorderColor = MusicPlayerColors.Purple,
-                    unfocusedBorderColor = MusicPlayerColors.LightGray,
-                    textColor = MusicPlayerColors.DarkGray
+                    backgroundColor = MaterialTheme.colors.surface,
+                    focusedBorderColor = MaterialTheme.colors.primary,
+                    unfocusedBorderColor = MaterialTheme.colors.onSurface.copy(alpha = 0.12f),
+                    textColor = MaterialTheme.colors.onSurface,
+                    cursorColor = MaterialTheme.colors.primary
                 ),
                 shape = RoundedCornerShape(16.dp),
                 modifier = Modifier
@@ -166,13 +178,13 @@ fun SearchScreen(
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
                         CircularProgressIndicator(
-                            color = MusicPlayerColors.Purple
+                            color = MaterialTheme.colors.primary
                         )
                         Spacer(modifier = Modifier.height(16.dp))
                         Text(
                             text = "Поиск треков...",
                             style = MaterialTheme.typography.body1,
-                            color = Color.White.copy(alpha = 0.7f)
+                            color = MaterialTheme.colors.onBackground.copy(alpha = 0.7f)
                         )
                     }
                 }
@@ -182,7 +194,7 @@ fun SearchScreen(
                 Card(
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(12.dp),
-                    backgroundColor = MusicPlayerColors.Pink.copy(alpha = 0.1f)
+                    backgroundColor = MaterialTheme.colors.error.copy(alpha = 0.1f)
                 ) {
                     Column(
                         modifier = Modifier.padding(16.dp),
@@ -191,14 +203,14 @@ fun SearchScreen(
                         Icon(
                             imageVector = Icons.Default.Error,
                             contentDescription = null,
-                            tint = MusicPlayerColors.Pink,
+                            tint = MaterialTheme.colors.error,
                             modifier = Modifier.size(48.dp)
                         )
                         Spacer(modifier = Modifier.height(8.dp))
                         Text(
                             text = error!!,
                             style = MaterialTheme.typography.body1,
-                            color = Color.White,
+                            color = MaterialTheme.colors.onBackground,
                             textAlign = TextAlign.Center
                         )
                     }
@@ -209,7 +221,7 @@ fun SearchScreen(
                 Card(
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(12.dp),
-                    backgroundColor = Color.White.copy(alpha = 0.1f)
+                    backgroundColor = MaterialTheme.colors.surface.copy(alpha = 0.1f)
                 ) {
                     Column(
                         modifier = Modifier.padding(32.dp),
@@ -218,20 +230,20 @@ fun SearchScreen(
                         Icon(
                             imageVector = Icons.Default.SearchOff,
                             contentDescription = null,
-                            tint = Color.White.copy(alpha = 0.5f),
+                            tint = MaterialTheme.colors.onSurface.copy(alpha = 0.5f),
                             modifier = Modifier.size(64.dp)
                         )
                         Spacer(modifier = Modifier.height(16.dp))
                         Text(
                             text = "Ничего не найдено",
                             style = MaterialTheme.typography.h6,
-                            color = Color.White.copy(alpha = 0.7f),
+                            color = MaterialTheme.colors.onBackground.copy(alpha = 0.7f),
                             textAlign = TextAlign.Center
                         )
                         Text(
                             text = "Попробуйте изменить запрос",
                             style = MaterialTheme.typography.body2,
-                            color = Color.White.copy(alpha = 0.5f),
+                            color = MaterialTheme.colors.onBackground.copy(alpha = 0.5f),
                             textAlign = TextAlign.Center
                         )
                     }
@@ -242,7 +254,7 @@ fun SearchScreen(
                 Card(
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(12.dp),
-                    backgroundColor = Color.White.copy(alpha = 0.1f)
+                    backgroundColor = MaterialTheme.colors.surface.copy(alpha = 0.1f)
                 ) {
                     Column(
                         modifier = Modifier.padding(32.dp),
@@ -251,20 +263,20 @@ fun SearchScreen(
                         Icon(
                             imageVector = Icons.Default.MusicNote,
                             contentDescription = null,
-                            tint = Color.White.copy(alpha = 0.5f),
+                            tint = MaterialTheme.colors.onSurface.copy(alpha = 0.5f),
                             modifier = Modifier.size(64.dp)
                         )
                         Spacer(modifier = Modifier.height(16.dp))
                         Text(
                             text = "Найдите свою музыку",
                             style = MaterialTheme.typography.h6,
-                            color = Color.White.copy(alpha = 0.7f),
+                            color = MaterialTheme.colors.onBackground.copy(alpha = 0.7f),
                             textAlign = TextAlign.Center
                         )
                         Text(
                             text = "Введите название трека или исполнителя",
                             style = MaterialTheme.typography.body2,
-                            color = Color.White.copy(alpha = 0.5f),
+                            color = MaterialTheme.colors.onBackground.copy(alpha = 0.5f),
                             textAlign = TextAlign.Center
                         )
                     }
@@ -272,18 +284,107 @@ fun SearchScreen(
             }
 
             else -> {
-                LazyColumn(
-                    verticalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    items(searchResults) { track ->
-                        TrackItem(
-                            track = track,
-                            onClick = {
-                                appState.playTrack(track)
-                            },
-                            isPlaying = currentTrack?.id == track.id
-                        )
+                Column(modifier = Modifier.fillMaxSize()) {
+                    // Section: New Releases
+                    // New Releases section (horizontal carousel)
+                    Text(
+                        text = "Новые релизы",
+                        style = MaterialTheme.typography.h6,
+                        color = MaterialTheme.colors.onBackground
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                    LazyRow(
+                        horizontalArrangement = Arrangement.spacedBy(12.dp),
+                        contentPadding = PaddingValues(horizontal = 4.dp)
+                    ) {
+                        items(searchResults.take(10)) { track ->
+                            TrackPreviewCard(
+                                track = track,
+                                onClick = { appState.playTrack(track) }
+                            )
+                        }
                     }
+
+                    Spacer(modifier = Modifier.height(16.dp))
+                    Text(
+                        text = "Результаты",
+                        style = MaterialTheme.typography.h6,
+                        color = MaterialTheme.colors.onBackground
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+
+                    LazyColumn(
+                        verticalArrangement = Arrangement.spacedBy(8.dp),
+                        contentPadding = PaddingValues(bottom = 96.dp)
+                    ) {
+                        items(searchResults) { track ->
+                            TrackItem(
+                                track = track,
+                                onClick = {
+                                    appState.playTrack(track)
+                                },
+                                isPlaying = currentTrack?.id == track.id
+                            )
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun HeroHeader(
+    onPlayClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Card(
+        modifier = modifier.fillMaxWidth(),
+        elevation = 0.dp,
+        shape = RoundedCornerShape(20.dp),
+        backgroundColor = Color.Transparent
+    ) {
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .heightIn(min = 120.dp)
+                .background(
+                    brush = Brush.horizontalGradient(
+                        listOf(
+                            MaterialTheme.colors.primary.copy(alpha = 0.25f),
+                            MaterialTheme.colors.secondary.copy(alpha = 0.15f)
+                        )
+                    ),
+                    shape = RoundedCornerShape(20.dp)
+                )
+                .clip(RoundedCornerShape(20.dp))
+                .padding(20.dp)
+        ) {
+            Column(
+                verticalArrangement = Arrangement.spacedBy(10.dp)
+            ) {
+                Text(
+                    text = "This Weekend",
+                    style = MaterialTheme.typography.h3.copy(fontWeight = FontWeight.Bold),
+                    color = MaterialTheme.colors.onPrimary.takeIf { MaterialTheme.colors.isLight.not() }
+                        ?: MaterialTheme.colors.onBackground
+                )
+                Text(
+                    text = "Найдите новую музыку и плейлисты",
+                    style = MaterialTheme.typography.body1,
+                    color = MaterialTheme.colors.onBackground.copy(alpha = 0.75f)
+                )
+                Button(
+                    onClick = onPlayClick,
+                    shape = RoundedCornerShape(12.dp),
+                    colors = ButtonDefaults.buttonColors(
+                        backgroundColor = MaterialTheme.colors.primary,
+                        contentColor = Color.White
+                    )
+                ) {
+                    Icon(Icons.Default.PlayArrow, contentDescription = null)
+                    Spacer(Modifier.width(6.dp))
+                    Text(text = "Play")
                 }
             }
         }

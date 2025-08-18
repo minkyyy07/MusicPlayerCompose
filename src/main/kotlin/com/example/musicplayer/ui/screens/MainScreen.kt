@@ -12,6 +12,7 @@ import androidx.compose.ui.unit.dp
 import com.example.musicplayer.AppState
 import com.example.musicplayer.Screen
 import com.example.musicplayer.ui.components.BottomPlayerBar
+import com.example.musicplayer.ui.components.MiniPlayerPlaceholder
 import com.example.musicplayer.ui.components.TopBar
 import com.example.musicplayer.ui.theme.MusicPlayerColors
 
@@ -44,15 +45,26 @@ fun MainScreen(appState: AppState) {
                 )
             },
             bottomBar = {
-                currentTrack?.let { track ->
-                    BottomPlayerBar(
-                        track = track,
-                        isPlaying = isPlaying,
-                        onPlayPauseClick = { appState.playPause() },
-                        onPreviousClick = { /* TODO: Previous track logic */ },
-                        onNextClick = { /* TODO: Next track logic */ },
-                        modifier = Modifier.fillMaxWidth()
-                    )
+                Surface(
+                    color = MaterialTheme.colors.surface.copy(alpha = 0.95f),
+                    elevation = 8.dp
+                ) {
+                    if (currentTrack != null) {
+                        BottomPlayerBar(
+                            track = currentTrack!!,
+                            isPlaying = isPlaying,
+                            onPlayPauseClick = { appState.playPause() },
+                            onPreviousClick = { /* TODO: Previous track logic */ },
+                            onNextClick = { /* TODO: Next track logic */ },
+                            modifier = Modifier.fillMaxWidth()
+                        )
+                    } else {
+                        MiniPlayerPlaceholder(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 8.dp)
+                        )
+                    }
                 }
             }
         ) { padding ->

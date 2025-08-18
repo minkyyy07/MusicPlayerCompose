@@ -57,7 +57,7 @@ fun TopBar(
             .padding(16.dp),
         shape = RoundedCornerShape(20.dp),
         elevation = 8.dp,
-        backgroundColor = Color.White.copy(alpha = 0.95f)
+        backgroundColor = MaterialTheme.colors.surface.copy(alpha = 0.95f)
     ) {
         Row(
             modifier = Modifier

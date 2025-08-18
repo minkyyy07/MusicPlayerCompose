@@ -4,13 +4,16 @@ import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import java.io.BufferedInputStream
+import java.io.ByteArrayInputStream
 import java.io.File
 import java.io.FileInputStream
 import java.net.URL
+import java.net.URLConnection
 import javazoom.jl.player.Player
+import javazoom.jl.decoder.JavaLayerException
 
 /**
- * Упрощенный MP3 плеер для стабильного воспроизведения
+ * Улучшенный MP3 плеер для работы с потоковыми URL и локальными файлами
  */
 class SimpleMp3Player {
     private val _isPlaying = MutableStateFlow(false)
@@ -27,36 +30,53 @@ class SimpleMp3Player {
     private var startTime = 0L
     private var pausedPosition = 0L
     private var currentFilePath: String? = null
+    private var audioData: ByteArray? = null
 
     fun loadTrack(filePath: String): Boolean {
         return try {
             stop()
             currentFilePath = filePath
+            audioData = null
 
-            // Устанавливаем примерную длительность
-            _duration.value = when {
-                filePath.startsWith("http://") || filePath.startsWith("https://") -> 30000L // 30 сек для preview
-                else -> {
+            // Предзагружаем данные для URL
+            if (filePath.startsWith("http://") || filePath.startsWith("https://")) {
+                println("Предзагрузка аудио данных с URL...")
+                CoroutineScope(Dispatchers.IO).launch {
                     try {
-                        val file = File(filePath)
-                        if (file.exists()) {
-                            // Приблизительная оценка по размеру файла (128 kbps)
-                            val fileSizeBytes = file.length()
-                            val estimatedDurationMs = (fileSizeBytes * 8) / (128 * 1000 / 8) * 1000
-                            estimatedDurationMs
-                        } else {
-                            30000L
-                        }
+                        val connection = URL(filePath).openConnection()
+                        connection.setRequestProperty("User-Agent", "Mozilla/5.0")
+                        connection.connectTimeout = 10000
+                        connection.readTimeout = 30000
+
+                        val inputStream = BufferedInputStream(connection.getInputStream())
+                        audioData = inputStream.readBytes()
+                        inputStream.close()
+
+                        _duration.value = 30000L // 30 секунд для preview треков
+                        println("Аудио данные загружены: ${audioData?.size} байт")
                     } catch (e: Exception) {
-                        30000L
+                        println("Ошибка предзагрузки: ${e.message}")
                     }
+                }
+            } else {
+                // Локальный файл
+                _duration.value = try {
+                    val file = File(filePath)
+                    if (file.exists()) {
+                        val fileSizeBytes = file.length()
+                        (fileSizeBytes * 8) / (128 * 1000 / 8) * 1000
+                    } else {
+                        180000L // 3 минуты по умолчанию
+                    }
+                } catch (e: Exception) {
+                    180000L
                 }
             }
 
             _position.value = 0L
             pausedPosition = 0L
-
             true
+
         } catch (e: Exception) {
             println("Ошибка загрузки трека: ${e.message}")
             false
@@ -73,10 +93,20 @@ class SimpleMp3Player {
                 _isPlaying.value = true
                 startTime = System.currentTimeMillis() - pausedPosition
 
-                // Создаем новый плеер
+                // Создаем входной поток
                 val inputStream = when {
                     filePath.startsWith("http://") || filePath.startsWith("https://") -> {
-                        BufferedInputStream(URL(filePath).openStream())
+                        if (audioData != null) {
+                            println("Используем предзагруженные данные")
+                            BufferedInputStream(ByteArrayInputStream(audioData))
+                        } else {
+                            println("Потоковое воспроизведение с URL")
+                            val connection = URL(filePath).openConnection()
+                            connection.setRequestProperty("User-Agent", "Mozilla/5.0")
+                            connection.connectTimeout = 10000
+                            connection.readTimeout = 30000
+                            BufferedInputStream(connection.getInputStream())
+                        }
                     }
                     else -> {
                         val file = File(filePath)
@@ -85,24 +115,42 @@ class SimpleMp3Player {
                     }
                 }
 
-                player = Player(inputStream)
+                // Создаем плеер с обработкой ошибок
+                player = try {
+                    Player(inputStream)
+                } catch (e: JavaLayerException) {
+                    println("Ошибка создания плеера JLayer: ${e.message}")
+                    inputStream.close()
+                    throw e
+                }
+
+                println("Плеер создан успешно, начинаем воспроизведение...")
 
                 // Обновляем позицию во время воспроизведения
                 val positionUpdateJob = launch {
                     while (_isPlaying.value && isActive) {
                         val elapsed = System.currentTimeMillis() - startTime
                         _position.value = elapsed.coerceAtMost(_duration.value)
-                        delay(100) // Обновляем каждые 100мс
+                        delay(100)
                     }
                 }
 
-                // Воспроизведение (блокирующий вызов)
-                player?.play()
-
-                positionUpdateJob.cancel()
+                try {
+                    // Воспроизведение (блокирующий вызов)
+                    player?.play()
+                    println("Воспроизведение завершено")
+                } catch (e: JavaLayerException) {
+                    println("Ошибка во время воспроизведения: ${e.message}")
+                    // Продолжаем, не прерывая весь процесс
+                } catch (e: Exception) {
+                    println("Общая ошибка воспроизведения: ${e.message}")
+                } finally {
+                    positionUpdateJob.cancel()
+                }
 
             } catch (e: Exception) {
-                println("Ошибка воспроизведения: ${e.message}")
+                println("Критическая ошибка воспроизведения: ${e.message}")
+                e.printStackTrace()
             } finally {
                 _isPlaying.value = false
             }
@@ -127,18 +175,22 @@ class SimpleMp3Player {
     }
 
     fun seekTo(positionMs: Long) {
-        // Для упрощения - перезапускаем трек с начала
-        // В реальном плеере нужно более сложное seeking
+        // Простое seeking - перезапуск с начала
         pausedPosition = 0L
         _position.value = 0L
 
         if (_isPlaying.value) {
             stop()
-            // Небольшая задержка перед перезапуском
             CoroutineScope(Dispatchers.Main).launch {
                 delay(200)
                 play()
             }
         }
+    }
+
+    fun release() {
+        stop()
+        audioData = null
+        currentFilePath = null
     }
 }

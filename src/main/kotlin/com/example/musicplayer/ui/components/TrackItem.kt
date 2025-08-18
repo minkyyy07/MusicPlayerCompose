@@ -1,5 +1,6 @@
 package com.example.musicplayer.ui.components
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -35,7 +36,8 @@ fun TrackItem(
             .clickable(onClick = onClick),
         shape = RoundedCornerShape(16.dp),
         elevation = if (isPlaying) 8.dp else 4.dp,
-        backgroundColor = if (isPlaying) MusicPlayerColors.Purple.copy(alpha = 0.1f) else MaterialTheme.colors.surface
+        backgroundColor = if (isPlaying) MaterialTheme.colors.primary.copy(alpha = 0.08f) else MaterialTheme.colors.surface,
+        border = if (isPlaying) BorderStroke(1.dp, MaterialTheme.colors.primary.copy(alpha = 0.6f)) else null
     ) {
         Row(
             modifier = Modifier
@@ -74,7 +76,7 @@ fun TrackItem(
                     text = track.title,
                     style = MaterialTheme.typography.h6,
                     fontWeight = if (isPlaying) FontWeight.Bold else FontWeight.Medium,
-                    color = if (isPlaying) MusicPlayerColors.Purple else MaterialTheme.colors.onSurface,
+                    color = if (isPlaying) MaterialTheme.colors.primary else MaterialTheme.colors.onSurface,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis
                 )
@@ -89,14 +91,13 @@ fun TrackItem(
                     overflow = TextOverflow.Ellipsis
                 )
 
-                if (track.duration != null) {
-                    Spacer(modifier = Modifier.height(2.dp))
-                    Text(
-                        text = formatDuration(track.duration!!),
-                        style = MaterialTheme.typography.caption,
-                        color = MaterialTheme.colors.onSurface.copy(alpha = 0.5f)
-                    )
-                }
+                Spacer(modifier = Modifier.height(2.dp))
+
+                Text(
+                    text = formatDuration(track.duration),
+                    style = MaterialTheme.typography.caption,
+                    color = MaterialTheme.colors.onSurface.copy(alpha = 0.5f)
+                )
             }
 
             // Индикатор воспроизведения
@@ -105,7 +106,7 @@ fun TrackItem(
                     modifier = Modifier
                         .size(12.dp)
                         .clip(CircleShape)
-                        .background(MusicPlayerColors.Green)
+                        .background(MaterialTheme.colors.secondary)
                 )
             }
         }
