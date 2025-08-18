@@ -3,8 +3,8 @@ package com.example.musicplayer.ui.screens
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
@@ -22,17 +22,15 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.example.musicplayer.AppState
-import com.example.musicplayer.MusicTrack
+import com.example.musicplayer.data.MusicTrack
 import com.example.musicplayer.data.deezer.DeezerApi
 import com.example.musicplayer.data.deezer.toAppMusicTrack
 import com.example.musicplayer.ui.components.TrackItem
 import com.example.musicplayer.ui.components.TrackPreviewCard
-import com.example.musicplayer.ui.theme.MusicPlayerColors
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
-@OptIn(androidx.compose.ui.ExperimentalComposeUiApi::class)
 @Composable
 fun SearchScreen(
     appState: AppState,
@@ -42,9 +40,9 @@ fun SearchScreen(
     var searchResults by remember { mutableStateOf<List<MusicTrack>>(emptyList()) }
     var isLoading by remember { mutableStateOf(false) }
     var error by remember { mutableStateOf<String?>(null) }
-    val scope = rememberCoroutineScope()
-    var debounceJob by remember { mutableStateOf<Job?>(null) }
+    var debounceJob: Job? by remember { mutableStateOf(null) }
 
+    val scope = rememberCoroutineScope()
     val currentTrack by appState.currentTrack.collectAsState()
 
     fun performSearch(query: String) {
@@ -58,7 +56,7 @@ fun SearchScreen(
             error = null
             try {
                 val results = DeezerApi.searchTracks(query).map { it.toAppMusicTrack() }
-                searchResults = results.take(20) // Ограничиваем результаты
+                searchResults = results.take(20)
             } catch (e: Exception) {
                 error = "Ошибка поиска: ${e.message}"
                 searchResults = emptyList()
@@ -82,13 +80,14 @@ fun SearchScreen(
             modifier = Modifier.padding(bottom = 24.dp)
         )
 
-        // Hero header (big title, subtitle, play button)
+        // Hero header
         HeroHeader(
             onPlayClick = {
                 val first = searchResults.firstOrNull()
-                if (first != null) appState.playTrack(first)
+                if (first != null) appState.selectTrack(first)
             }
         )
+
         Spacer(modifier = Modifier.height(16.dp))
 
         // Поисковая строка
@@ -109,7 +108,7 @@ fun SearchScreen(
                         searchResults = emptyList()
                     } else {
                         debounceJob = scope.launch {
-                            delay(500) // Debounce на 500ms
+                            delay(500)
                             performSearch(newValue)
                         }
                     }
@@ -154,9 +153,7 @@ fun SearchScreen(
                 colors = TextFieldDefaults.outlinedTextFieldColors(
                     backgroundColor = MaterialTheme.colors.surface,
                     focusedBorderColor = MaterialTheme.colors.primary,
-                    unfocusedBorderColor = MaterialTheme.colors.onSurface.copy(alpha = 0.12f),
-                    textColor = MaterialTheme.colors.onSurface,
-                    cursorColor = MaterialTheme.colors.primary
+                    unfocusedBorderColor = MaterialTheme.colors.onSurface.copy(alpha = 0.12f)
                 ),
                 shape = RoundedCornerShape(16.dp),
                 modifier = Modifier
@@ -221,7 +218,7 @@ fun SearchScreen(
                 Card(
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(12.dp),
-                    backgroundColor = MaterialTheme.colors.surface.copy(alpha = 0.1f)
+                    backgroundColor = MaterialTheme.colors.surface
                 ) {
                     Column(
                         modifier = Modifier.padding(32.dp),
@@ -237,13 +234,7 @@ fun SearchScreen(
                         Text(
                             text = "Ничего не найдено",
                             style = MaterialTheme.typography.h6,
-                            color = MaterialTheme.colors.onBackground.copy(alpha = 0.7f),
-                            textAlign = TextAlign.Center
-                        )
-                        Text(
-                            text = "Попробуйте изменить запрос",
-                            style = MaterialTheme.typography.body2,
-                            color = MaterialTheme.colors.onBackground.copy(alpha = 0.5f),
+                            color = MaterialTheme.colors.onBackground,
                             textAlign = TextAlign.Center
                         )
                     }
@@ -254,7 +245,7 @@ fun SearchScreen(
                 Card(
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(12.dp),
-                    backgroundColor = MaterialTheme.colors.surface.copy(alpha = 0.1f)
+                    backgroundColor = MaterialTheme.colors.surface
                 ) {
                     Column(
                         modifier = Modifier.padding(32.dp),
@@ -270,13 +261,7 @@ fun SearchScreen(
                         Text(
                             text = "Найдите свою музыку",
                             style = MaterialTheme.typography.h6,
-                            color = MaterialTheme.colors.onBackground.copy(alpha = 0.7f),
-                            textAlign = TextAlign.Center
-                        )
-                        Text(
-                            text = "Введите название трека или исполнителя",
-                            style = MaterialTheme.typography.body2,
-                            color = MaterialTheme.colors.onBackground.copy(alpha = 0.5f),
+                            color = MaterialTheme.colors.onBackground,
                             textAlign = TextAlign.Center
                         )
                     }
@@ -285,29 +270,31 @@ fun SearchScreen(
 
             else -> {
                 Column(modifier = Modifier.fillMaxSize()) {
-                    // Section: New Releases
-                    // New Releases section (horizontal carousel)
-                    Text(
-                        text = "Новые релизы",
-                        style = MaterialTheme.typography.h6,
-                        color = MaterialTheme.colors.onBackground
-                    )
-                    Spacer(modifier = Modifier.height(8.dp))
-                    LazyRow(
-                        horizontalArrangement = Arrangement.spacedBy(12.dp),
-                        contentPadding = PaddingValues(horizontal = 4.dp)
-                    ) {
-                        items(searchResults.take(10)) { track ->
-                            TrackPreviewCard(
-                                track = track,
-                                onClick = { appState.playTrack(track) }
-                            )
+                    // Результаты в виде превью карточек (горизонтальный список)
+                    if (searchResults.isNotEmpty()) {
+                        Text(
+                            text = "Новые релизы",
+                            style = MaterialTheme.typography.h6,
+                            color = MaterialTheme.colors.onBackground
+                        )
+                        Spacer(modifier = Modifier.height(8.dp))
+                        LazyRow(
+                            horizontalArrangement = Arrangement.spacedBy(12.dp),
+                            contentPadding = PaddingValues(horizontal = 4.dp)
+                        ) {
+                            items(searchResults.take(10)) { track ->
+                                TrackPreviewCard(
+                                    track = track,
+                                    onClick = { appState.selectTrack(track) }
+                                )
+                            }
                         }
+
+                        Spacer(modifier = Modifier.height(16.dp))
                     }
 
-                    Spacer(modifier = Modifier.height(16.dp))
                     Text(
-                        text = "Результаты",
+                        text = "Результаты поиска",
                         style = MaterialTheme.typography.h6,
                         color = MaterialTheme.colors.onBackground
                     )
@@ -320,9 +307,7 @@ fun SearchScreen(
                         items(searchResults) { track ->
                             TrackItem(
                                 track = track,
-                                onClick = {
-                                    appState.playTrack(track)
-                                },
+                                onClick = { appState.selectTrack(track) },
                                 isPlaying = currentTrack?.id == track.id
                             )
                         }
@@ -364,10 +349,9 @@ private fun HeroHeader(
                 verticalArrangement = Arrangement.spacedBy(10.dp)
             ) {
                 Text(
-                    text = "This Weekend",
-                    style = MaterialTheme.typography.h3.copy(fontWeight = FontWeight.Bold),
-                    color = MaterialTheme.colors.onPrimary.takeIf { MaterialTheme.colors.isLight.not() }
-                        ?: MaterialTheme.colors.onBackground
+                    text = "Поиск музыки",
+                    style = MaterialTheme.typography.h5.copy(fontWeight = FontWeight.Bold),
+                    color = MaterialTheme.colors.onBackground
                 )
                 Text(
                     text = "Найдите новую музыку и плейлисты",

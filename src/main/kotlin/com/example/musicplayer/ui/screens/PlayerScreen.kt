@@ -18,7 +18,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.example.musicplayer.AppState
-import com.example.musicplayer.MusicTrack
+import com.example.musicplayer.data.MusicTrack
 import com.example.musicplayer.ui.components.AlbumCover
 import com.example.musicplayer.ui.components.PlaybackProgressBar
 import com.example.musicplayer.ui.theme.MusicPlayerColors
@@ -33,12 +33,12 @@ fun PlayerScreen(
     appState: AppState? = null
 ) {
     // Получаем реальные данные от MP3 плеера если доступны
-    val playerPosition by (appState?.playerPosition?.collectAsState() ?: remember { mutableStateOf(0L) })
-    val playerDuration by (appState?.playerDuration?.collectAsState() ?: remember { mutableStateOf(0L) })
+    val playerPosition by (appState?.playerPosition?.collectAsState() ?: mutableStateOf(0L))
+    val playerDuration by (appState?.playerDuration?.collectAsState() ?: mutableStateOf(0L))
 
     // Используем данные плеера или fallback значения
     val currentPositionSec = (playerPosition / 1000f).coerceAtLeast(0f)
-    val durationSec = if (playerDuration > 0) (playerDuration / 1000f) else (currentTrack?.duration?.toFloat() ?: 0f)
+    val durationSec = if (playerDuration > 0) (playerDuration / 1000f) else (currentTrack?.duration?.toFloat()?.div(1000) ?: 0f)
 
     Box(
         modifier = Modifier

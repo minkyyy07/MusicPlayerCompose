@@ -1,7 +1,5 @@
 package com.example.musicplayer.data
 
-import com.example.musicplayer.MusicTrack
-
 object SampleData {
     val sampleTracks = listOf(
         MusicTrack(

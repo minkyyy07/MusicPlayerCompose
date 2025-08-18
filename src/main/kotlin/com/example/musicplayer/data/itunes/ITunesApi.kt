@@ -1,6 +1,6 @@
 package com.example.musicplayer.data.itunes
 
-import com.example.musicplayer.MusicTrack as AppMusicTrack
+import com.example.musicplayer.data.MusicTrack as AppMusicTrack
 import io.ktor.client.*
 import io.ktor.client.call.*
 import io.ktor.client.engine.cio.*
@@ -54,11 +54,11 @@ data class ITunesTrack(
 
 // Маппер
 fun ITunesTrack.toAppMusicTrack(): AppMusicTrack = AppMusicTrack(
-    id = trackId ?: 0L,
+    id = (trackId ?: 0L).toString(),
     title = trackName ?: "Unknown",
     artist = artistName ?: "Unknown",
     album = collectionName ?: "",
     duration = trackTimeMillis ?: 0L,
     filePath = previewUrl ?: "",
-    coverArtPath = artworkUrl100
+    coverArtPath = artworkUrl100 ?: ""
 )

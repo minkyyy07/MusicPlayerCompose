@@ -6,6 +6,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.window.WindowState
 import com.example.musicplayer.audio.SimpleMp3Player
+import com.example.musicplayer.data.MusicTrack
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -219,13 +220,3 @@ fun rememberAppState(
         AppState(windowState, coroutineScope)
     }
 }
-
-data class MusicTrack(
-    val id: String,
-    val title: String,
-    val artist: String,
-    val album: String,
-    val duration: Long,
-    val filePath: String,
-    val coverArtPath: String? = null
-)

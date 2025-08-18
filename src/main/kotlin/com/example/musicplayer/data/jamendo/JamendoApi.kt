@@ -1,6 +1,6 @@
 package com.example.musicplayer.data.jamendo
 
-import com.example.musicplayer.MusicTrack as AppMusicTrack
+import com.example.musicplayer.data.MusicTrack as AppMusicTrack
 import io.ktor.client.*
 import io.ktor.client.call.*
 import io.ktor.client.engine.cio.*
@@ -75,11 +75,11 @@ data class JamendoTrack(
 
 // Маппер в доменную модель
 fun JamendoTrack.toAppMusicTrack(): AppMusicTrack = AppMusicTrack(
-    id = id,
+    id = id.toString(),
     title = name,
     artist = artistName,
     album = albumName ?: "",
     duration = (duration ?: 0) * 1000L, // секунды -> миллисекунды
     filePath = audio ?: audioDownload ?: "", // Полный MP3 файл!
-    coverArtPath = image
+    coverArtPath = image ?: ""
 )

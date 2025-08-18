@@ -1,6 +1,6 @@
 package com.example.musicplayer.data.deezer
 
-import com.example.musicplayer.MusicTrack as AppMusicTrack
+import com.example.musicplayer.data.MusicTrack as AppMusicTrack
 import io.ktor.client.*
 import io.ktor.client.call.*
 import io.ktor.client.engine.cio.*
@@ -65,12 +65,11 @@ data class DeezerAlbum(
 
 // Маппер в доменную модель
 fun DeezerTrack.toAppMusicTrack(): AppMusicTrack = AppMusicTrack(
-    id = id,
+    id = id.toString(),
     title = title ?: "Unknown",
     artist = artist?.name ?: "Unknown",
     album = album?.title ?: "",
     duration = (durationSec ?: 0L) * 1000L,
     filePath = previewUrl ?: "",
-    coverArtPath = album?.coverBig ?: album?.coverMedium
+    coverArtPath = album?.coverBig ?: album?.coverMedium ?: ""
 )
-
