@@ -114,7 +114,8 @@ fun TrackItem(
 }
 
 private fun formatDuration(duration: Long): String {
-    val minutes = (duration / 60).toInt()
-    val seconds = (duration % 60).toInt()
+    val totalSeconds = (duration / 1000).toInt()
+    val minutes = totalSeconds / 60
+    val seconds = totalSeconds % 60
     return String.format("%d:%02d", minutes, seconds)
 }

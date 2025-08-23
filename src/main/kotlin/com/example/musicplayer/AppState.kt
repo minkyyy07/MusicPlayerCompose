@@ -36,6 +36,9 @@ class AppState(
     private val _trackList = MutableStateFlow<List<MusicTrack>>(emptyList())
     val trackList: StateFlow<List<MusicTrack>> = _trackList
 
+    private val _darkTheme = MutableStateFlow(false)
+    val darkTheme: StateFlow<Boolean> = _darkTheme
+
     private var clip: Any? = null
     private val mp3Player = SimpleMp3Player()
 
@@ -118,6 +121,8 @@ class AppState(
             }
         }
     }
+
+    fun toggleTheme() { _darkTheme.value = !_darkTheme.value }
 
     fun playTrack(track: MusicTrack) {
         coroutineScope.launch {
